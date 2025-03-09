@@ -9,7 +9,9 @@ import axios from "axios";
 //   withCredentials: true,
 // });
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  // baseURL: import.meta.env.VITE_API_URL,
+  baseURL: import.meta.env.VITE_API_URL || "https://job-diary.onrender.com/api",
+
   withCredentials: true,
 });
 export const fetchProfile = createAsyncThunk(
