@@ -1,8 +1,12 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const api = axios.create({
-  baseURL: "http://localhost:8080/api/employer",
+  // baseURL: "http://localhost:8080/api/employer",
+  baseURL: `${process.env.BACKEND_API}/api/employer`,
   withCredentials: true,
 });
 

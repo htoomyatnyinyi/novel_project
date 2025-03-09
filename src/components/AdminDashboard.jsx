@@ -11,6 +11,9 @@ import {
   fetchAnalytics,
   fetchCategories,
 } from "../redux/slice/adminSlice";
+import dotenv from "dotenv";
+
+dotenv.config;
 
 const AdminDashboard = () => {
   const dispatch = useDispatch();
@@ -586,7 +589,7 @@ const AdminDashboard = () => {
                   <img
                     src={
                       companyLogoPreview ||
-                      `http://localhost:8080${editJob.company_logo_url}`
+                      `${process.env.BACKEND_API}${editJob.company_logo_url}`
                     }
                     alt="Company Logo Preview"
                     className="mt-2 w-32 h-32 object-cover rounded"
@@ -605,7 +608,7 @@ const AdminDashboard = () => {
                   <img
                     src={
                       postImagePreview ||
-                      `http://localhost:8080${editJob.post_image_url}`
+                      `${process.env.BACKEND_API}${editJob.post_image_url}`
                     }
                     alt="Post Image Preview"
                     className="mt-2 w-32 h-32 object-cover rounded"
@@ -750,7 +753,6 @@ const AdminDashboard = () => {
 };
 
 export default AdminDashboard;
-
 
 // import React, { useEffect, useState } from "react";
 // import { useDispatch, useSelector } from "react-redux";
