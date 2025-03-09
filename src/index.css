@@ -1,1 +1,28 @@
 @import "tailwindcss";
+/* @import "tailwind-scrollbar-hide"; */
+
+/* For Dark Theme */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* 
+:root {
+  color-scheme: light dark;
+  color: blue;
+  background-color: black;
+} */
+
+/* navbar */
+.animate-slide-in {
+  animation: slideIn 0.3s ease-in-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

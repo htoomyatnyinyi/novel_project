@@ -179,10 +179,17 @@ const adminSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
+      // .addCase(fetchUsers.fulfilled, (state, action) => {
+      //   state.loading = false;
+      //   state.users = action.payload.data;
+      // })
       .addCase(fetchUsers.fulfilled, (state, action) => {
         state.loading = false;
         state.users = action.payload.data;
+        state.userPagination = action.payload.pagination; // Should update here
+        console.log("Fetched Users:", action.payload); // Debug log
       })
+
       .addCase(fetchUsers.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
@@ -207,7 +214,13 @@ const adminSlice = createSlice({
       .addCase(fetchJobs.fulfilled, (state, action) => {
         state.loading = false;
         state.jobs = action.payload.data;
+        state.jobPagination = action.payload.pagination; // Should update here
+        console.log("Fetched Jobs:", action.payload); // Debug log
       })
+      // .addCase(fetchJobs.fulfilled, (state, action) => {
+      //   state.loading = false;
+      //   state.jobs = action.payload.data;
+      // })
       .addCase(fetchJobs.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;

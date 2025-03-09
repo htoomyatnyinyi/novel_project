@@ -212,22 +212,22 @@ const AdminDashboard = () => {
       <h2 className="text-3xl font-bold mb-6">Admin Dashboard</h2>
       {loading && <p className="text-gray-500">Loading...</p>}
       {error && (
-        <div className="mb-6 p-4 bg-red-100 text-red-700 rounded">
+        <div className="mb-6 p-4  text-red-700 rounded">
           <p>{error}</p>
         </div>
       )}
 
       {/* Analytics */}
       <div className="mb-8 grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white p-4 rounded shadow">
+        <div className=" p-4 rounded shadow">
           <h3 className="text-xl font-semibold">Total Users</h3>
           <p className="text-2xl">{analytics.total_users}</p>
         </div>
-        <div className="bg-white p-4 rounded shadow">
+        <div className=" p-4 rounded shadow">
           <h3 className="text-xl font-semibold">Total Jobs</h3>
           <p className="text-2xl">{analytics.total_jobs}</p>
         </div>
-        <div className="bg-white p-4 rounded shadow">
+        <div className=" p-4 rounded shadow">
           <h3 className="text-xl font-semibold">Total Applications</h3>
           <p className="text-2xl">{analytics.total_applications}</p>
         </div>
@@ -311,7 +311,7 @@ const AdminDashboard = () => {
           {users.map((user) => (
             <li
               key={user.id}
-              className="bg-white p-4 rounded shadow flex justify-between items-center"
+              className="p-4 rounded shadow flex justify-between items-center"
             >
               <div>
                 <p className="font-semibold">{user.username}</p>
@@ -382,7 +382,7 @@ const AdminDashboard = () => {
           {jobs.map((job) => (
             <li
               key={job.id}
-              className="bg-white p-4 rounded shadow flex justify-between items-center"
+              className=" p-4 rounded shadow flex justify-between items-center"
             >
               <div>
                 <p className="font-semibold">{job.title}</p>
@@ -749,7 +749,10 @@ const AdminDashboard = () => {
   );
 };
 
-export default AdminDashboard; // import React, { useEffect, useState } from "react";
+export default AdminDashboard;
+
+
+// import React, { useEffect, useState } from "react";
 // import { useDispatch, useSelector } from "react-redux";
 // import {
 //   fetchUsers,

@@ -21,11 +21,8 @@ const Login = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <form
-        onSubmit={handleSubmit}
-        className="bg-white p-6 rounded shadow-md w-96"
-      >
+    <div className="flex items-center justify-center min-h-screen ">
+      <form onSubmit={handleSubmit} className=" p-6 rounded shadow-md w-96">
         <h2 className="text-2xl font-bold mb-4">Login</h2>
         <input
           type="email"

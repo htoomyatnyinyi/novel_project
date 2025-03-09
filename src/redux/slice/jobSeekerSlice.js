@@ -70,6 +70,7 @@ export const createSavedJob = createAsyncThunk(
   "jobSeeker/createSavedJob",
   async (job_post_id) => {
     const { data } = await api.post("/job-seeker/saved-jobs", { job_post_id });
+    console.log(data, " return savedData");
     return data;
   }
 );
@@ -118,14 +119,6 @@ export const deleteApplication = createAsyncThunk(
   }
 );
 
-// Job Search
-// export const searchJobs = createAsyncThunk(
-//   "jobSeeker/searchJobs",
-//   async (params) => {
-//     const { data } = await api.get("/job-posts/search", { params });
-//     return data.data;
-//   }
-// );
 export const searchJobs = createAsyncThunk(
   "jobSeeker/searchJobs",
   async (params, { rejectWithValue }) => {
@@ -139,6 +132,18 @@ export const searchJobs = createAsyncThunk(
     }
   }
 );
+
+export const fetchJobDetails = createAsyncThunk(
+  "jobSeeker/fetchJobDetails",
+  async (id, { rejectWithValue }) => {
+    // console.log(id, "before fetch");
+    const { data } = await api.get(`/job-posts/${id}`);
+    // console.log(data.data, "at return job details");
+    // return data.data;
+    return { data: data.data };
+  }
+);
+
 const jobSeekerSlice = createSlice({
   name: "jobSeeker",
   initialState: {
@@ -147,6 +152,7 @@ const jobSeekerSlice = createSlice({
     savedJobs: [],
     applications: [],
     searchResults: [], // Add searchResults to state
+    jobDetails: {},
     loading: false,
     error: null,
   },
@@ -202,9 +208,21 @@ const jobSeekerSlice = createSlice({
       })
       .addCase(searchJobs.fulfilled, (state, action) => {
         state.loading = false;
-        state.searchResults = action.payload.data; // Store job list
+        state.searchResults = action.payload.data;
       })
       .addCase(searchJobs.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(fetchJobDetails.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchJobDetails.fulfilled, (state, action) => {
+        state.loading = false;
+        state.jobDetails = action.payload.data;
+      })
+      .addCase(fetchJobDetails.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });

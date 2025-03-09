@@ -1,459 +1,1173 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useForm } from "react-hook-form";
+import { useDropzone } from "react-dropzone";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import {
+  FaTrash,
+  FaHome,
+  FaUser,
+  FaBriefcase,
+  FaList,
+  FaEdit,
+  FaPlus,
+} from "react-icons/fa";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 import {
   createProfile,
   fetchProfile,
   updateProfile,
-  deleteProfile,
   createJob,
   fetchJobs,
+  updateJob,
+  deleteJob,
+  fetchAppliedJobs,
+  fetchAnalytics,
+  updateApplicationStatus,
 } from "../redux/slice/employerSlice.js";
 
 const EmployerDashboard = () => {
   const dispatch = useDispatch();
-  const { profile, jobs, loading, error } = useSelector(
+  const { profile, jobs, appliedJobs, analytics, loading, error } = useSelector(
     (state) => state.employer
   );
+  console.log(profile);
+  const [activeSection, setActiveSection] = useState("overview");
+  const [editingProfile, setEditingProfile] = useState(false);
+  const [editingJobId, setEditingJobId] = useState(null); // For My Jobs
+  const [editingAppliedJobId, setEditingAppliedJobId] = useState(null); // For Applied Jobs
 
-  const [profileForm, setProfileForm] = useState({
-    company_name: "",
-    contact_phone: "",
-    address_line: "",
-    city: "",
-    state: "",
-    postal_code: "",
-    country: "",
-    website_url: "",
-    industry: "",
-    company_description: "",
+  // Profile Form
+  const {
+    register: registerProfile,
+    handleSubmit: handleProfileSubmit,
+    reset: resetProfile,
+    setValue,
+  } = useForm({
+    defaultValues: {
+      company_name: "",
+      contact_phone: "",
+      company_description: "",
+    },
+  });
+
+  // Job Form (for Post Job)
+  const {
+    register: registerJob,
+    handleSubmit: handleJobSubmit,
+    reset: resetJob,
+  } = useForm({
+    defaultValues: {
+      title: "",
+      description: "",
+      employment_type: "full_time",
+      salary_min: "",
+      salary_max: "",
+      location: "",
+      address: "",
+      category: "",
+      application_deadline: "",
+    },
+  });
+
+  // Edit Job Form (for My Jobs and Applied Jobs)
+  const {
+    register: registerEditJob,
+    handleSubmit: handleEditJobSubmit,
+    setValue: setEditJobValue,
+  } = useForm({
+    defaultValues: {
+      title: "",
+      description: "",
+      employment_type: "full_time",
+      salary_min: "",
+      salary_max: "",
+      location: "",
+      address: "",
+      category: "",
+      application_deadline: "",
+    },
   });
 
   const [jobForm, setJobForm] = useState({
-    title: "Python Developer",
-    description: "Blah.. Blah",
-    salary_min: "22334",
-    salary_max: "34455",
-    location: "Yangon",
-    address: "Ba Han Township",
-    employment_type: "full_time",
-    category: "Technology",
-    requirements: ["Blah", "Blah2", "Blah3", "Blah4"],
-    responsibilities: ["Blah1", "Ha1", "h3", "h3fj", "hflakj"],
-    application_deadline: "2025-05-24",
-    company_logo: null,
+    requirements: [],
+    responsibilities: [],
     post_image: null,
   });
-
-  const [requirementInput, setRequirementInput] = useState("");
-  const [responsibilityInput, setResponsibilityInput] = useState("");
+  const [editJobForm, setEditJobForm] = useState({
+    requirements: [],
+    responsibilities: [],
+    post_image: null,
+  });
+  const [logoFile, setLogoFile] = useState(null);
+  const [newRequirement, setNewRequirement] = useState("");
+  const [newResponsibility, setNewResponsibility] = useState("");
 
   useEffect(() => {
     dispatch(fetchProfile());
     dispatch(fetchJobs());
+    dispatch(fetchAppliedJobs());
+    dispatch(fetchAnalytics());
   }, [dispatch]);
 
   useEffect(() => {
-    if (profile) {
-      setProfileForm({
-        company_name: profile.company_name || "",
-        contact_phone: profile.contact_phone || "",
-        address_line: profile.address_line || "",
-        city: profile.city || "",
-        state: profile.state || "",
-        postal_code: profile.postal_code || "",
-        country: profile.country || "",
-        website_url: profile.website_url || "",
-        industry: profile.industry || "",
-        company_description: profile.company_description || "",
-      });
+    if (profile && !editingProfile) {
+      setValue("company_name", profile.company_name);
+      setValue("contact_phone", profile.contact_phone);
+      setValue("company_description", profile.company_description);
     }
-  }, [profile]);
+  }, [profile, setValue, editingProfile]);
 
-  const handleProfileChange = (e) => {
-    const { name, value } = e.target;
-    setProfileForm((prev) => ({ ...prev, [name]: value }));
+  // Handlers
+  const onProfileSubmit = (data) => {
+    const formData = new FormData();
+    Object.entries(data).forEach(([key, value]) => formData.append(key, value));
+    if (logoFile) formData.append("logo", logoFile);
+
+    const action = profile ? updateProfile(formData) : createProfile(formData);
+    dispatch(action)
+      .unwrap()
+      .then(() => {
+        toast.success(profile ? "Profile updated!" : "Profile created!");
+        setEditingProfile(false);
+      })
+      .catch((err) => toast.error(err.message));
   };
 
-  const handleProfileSubmit = (e) => {
-    e.preventDefault();
+  const onJobSubmit = (data) => {
     const formData = new FormData();
-    Object.entries(profileForm).forEach(([key, value]) =>
-      formData.append(key, value)
+    Object.entries(data).forEach(([key, value]) =>
+      formData.append(key, value || "")
     );
-    if (profile) dispatch(updateProfile(profileForm));
-    else dispatch(createProfile(formData));
-  };
-
-  const handleDeleteProfile = () => {
-    if (window.confirm("Are you sure you want to delete your profile?")) {
-      dispatch(deleteProfile());
-    }
-  };
-
-  const handleJobChange = (e) => {
-    const { name, value, files } = e.target;
-    if (files) {
-      setJobForm((prev) => ({ ...prev, [name]: files[0] }));
-    } else {
-      setJobForm((prev) => ({ ...prev, [name]: value }));
-    }
-  };
-
-  const addRequirement = () => {
-    if (requirementInput.trim()) {
-      setJobForm((prev) => ({
-        ...prev,
-        requirements: [...prev.requirements, requirementInput],
-      }));
-      setRequirementInput("");
-    }
-  };
-
-  const addResponsibility = () => {
-    if (responsibilityInput.trim()) {
-      setJobForm((prev) => ({
-        ...prev,
-        responsibilities: [...prev.responsibilities, responsibilityInput],
-      }));
-      setResponsibilityInput("");
-    }
-  };
-
-  const handleJobSubmit = (e) => {
-    e.preventDefault();
-    const formData = new FormData();
-    formData.append("title", jobForm.title);
-    formData.append("description", jobForm.description);
-    formData.append("salary_min", jobForm.salary_min);
-    formData.append("salary_max", jobForm.salary_max);
-    formData.append("location", jobForm.location);
-    formData.append("address", jobForm.address);
-    formData.append("employment_type", jobForm.employment_type);
-    formData.append("category", jobForm.category);
-    formData.append("application_deadline", jobForm.application_deadline);
-    if (jobForm.company_logo)
-      formData.append("company_logo", jobForm.company_logo);
     if (jobForm.post_image) formData.append("post_image", jobForm.post_image);
-    jobForm.requirements.forEach((req, index) =>
-      formData.append(`requirements[${index}]`, req)
+    formData.append("requirements", JSON.stringify(jobForm.requirements));
+    formData.append(
+      "responsibilities",
+      JSON.stringify(jobForm.responsibilities)
     );
-    jobForm.responsibilities.forEach((resp, index) =>
-      formData.append(`responsibilities[${index}]`, resp)
-    );
-    console.log(formData, "at handlesubmit");
-    dispatch(createJob(formData));
+
+    dispatch(createJob(formData))
+      .unwrap()
+      .then(() => {
+        toast.success("Job posted!");
+        setJobForm({
+          requirements: [],
+          responsibilities: [],
+          post_image: null,
+        });
+        setNewRequirement("");
+        setNewResponsibility("");
+        resetJob();
+      })
+      .catch((err) => toast.error(err.message));
   };
+
+  const onEditJobSubmit = (data, jobId, isAppliedJob = false) => {
+    const formData = new FormData();
+    Object.entries(data).forEach(([key, value]) =>
+      formData.append(key, value || "")
+    );
+    if (editJobForm.post_image)
+      formData.append("post_image", editJobForm.post_image);
+    formData.append("requirements", JSON.stringify(editJobForm.requirements));
+    formData.append(
+      "responsibilities",
+      JSON.stringify(editJobForm.responsibilities)
+    );
+
+    dispatch(updateJob({ jobId, formData }))
+      .unwrap()
+      .then(() => {
+        toast.success("Job updated!");
+        if (isAppliedJob) setEditingAppliedJobId(null);
+        else setEditingJobId(null);
+        setEditJobForm({
+          requirements: [],
+          responsibilities: [],
+          post_image: null,
+        });
+        setNewRequirement("");
+        setNewResponsibility("");
+      })
+      .catch((err) => toast.error(err.message));
+  };
+
+  const handleEditJob = (job, isAppliedJob = false) => {
+    const setId = isAppliedJob ? setEditingAppliedJobId : setEditingJobId;
+    setId(job.id);
+    setEditJobValue("title", job.title);
+    setEditJobValue("description", job.description);
+    setEditJobValue("employment_type", job.employment_type);
+    setEditJobValue("salary_min", job.salary_min || "");
+    setEditJobValue("salary_max", job.salary_max || "");
+    setEditJobValue("location", job.location || "");
+    setEditJobValue("address", job.address || "");
+    setEditJobValue("category", job.category || "");
+    setEditJobValue(
+      "application_deadline",
+      job.application_deadline ? job.application_deadline.slice(0, 10) : ""
+    );
+    setEditJobForm({
+      requirements: job.requirements || [],
+      responsibilities: job.responsibilities || [],
+      post_image: null,
+    });
+  };
+
+  const handleDeleteJob = (jobId) => {
+    if (window.confirm("Delete this job?")) {
+      dispatch(deleteJob(jobId))
+        .unwrap()
+        .then(() => toast.success("Job deleted!"))
+        .catch((err) => toast.error(err.message));
+    }
+  };
+
+  const handleStatusChange = (applicationId, status) => {
+    dispatch(updateApplicationStatus({ applicationId, status }))
+      .unwrap()
+      .then(() => toast.success("Status updated!"))
+      .catch((err) => toast.error(err.message));
+  };
+
+  // Add/Delete Handlers for Requirements and Responsibilities
+  const addRequirement = (formType) => {
+    if (newRequirement.trim()) {
+      if (formType === "post") {
+        setJobForm((prev) => ({
+          ...prev,
+          requirements: [...prev.requirements, newRequirement.trim()],
+        }));
+      } else {
+        setEditJobForm((prev) => ({
+          ...prev,
+          requirements: [...prev.requirements, newRequirement.trim()],
+        }));
+      }
+      setNewRequirement("");
+    }
+  };
+
+  const deleteRequirement = (index, formType) => {
+    if (formType === "post") {
+      setJobForm((prev) => ({
+        ...prev,
+        requirements: prev.requirements.filter((_, i) => i !== index),
+      }));
+    } else {
+      setEditJobForm((prev) => ({
+        ...prev,
+        requirements: prev.requirements.filter((_, i) => i !== index),
+      }));
+    }
+  };
+
+  const addResponsibility = (formType) => {
+    if (newResponsibility.trim()) {
+      if (formType === "post") {
+        setJobForm((prev) => ({
+          ...prev,
+          responsibilities: [
+            ...prev.responsibilities,
+            newResponsibility.trim(),
+          ],
+        }));
+      } else {
+        setEditJobForm((prev) => ({
+          ...prev,
+          responsibilities: [
+            ...prev.responsibilities,
+            newResponsibility.trim(),
+          ],
+        }));
+      }
+      setNewResponsibility("");
+    }
+  };
+
+  const deleteResponsibility = (index, formType) => {
+    if (formType === "post") {
+      setJobForm((prev) => ({
+        ...prev,
+        responsibilities: prev.responsibilities.filter((_, i) => i !== index),
+      }));
+    } else {
+      setEditJobForm((prev) => ({
+        ...prev,
+        responsibilities: prev.responsibilities.filter((_, i) => i !== index),
+      }));
+    }
+  };
+
+  // Dropzones
+  const logoDropzone = useDropzone({
+    accept: { "image/*": [".jpeg", ".png", ".gif"] },
+    onDrop: (files) => setLogoFile(files[0]),
+  });
+  const postImageDropzone = useDropzone({
+    accept: { "image/*": [".jpeg", ".png", ".gif"] },
+    onDrop: (files) =>
+      setJobForm((prev) => ({ ...prev, post_image: files[0] })),
+  });
+  const editPostImageDropzone = useDropzone({
+    accept: { "image/*": [".jpeg", ".png", ".gif"] },
+    onDrop: (files) =>
+      setEditJobForm((prev) => ({ ...prev, post_image: files[0] })),
+  });
+
+  // Chart Data
+  const chartData =
+    analytics?.jobStats?.map((stat) => ({
+      date: new Date(stat.date).toLocaleDateString(),
+      jobs: stat.job_count,
+      applications:
+        analytics.applicationStats?.find((app) => app.date === stat.date)
+          ?.application_count || 0,
+    })) || [];
 
   return (
-    <div className="p-6">
-      <h2 className="text-2xl font-bold mb-4">Employer Dashboard</h2>
-      {loading && <p className="text-gray-500">Loading...</p>}
-      {error && (
-        <div className="mb-6 p-4 bg-red-100 text-red-700 rounded">
-          <p>{error}</p>
-        </div>
-      )}
+    <div className="flex min-h-screen bg-gray-100">
+      {/* Sidebar */}
+      <aside className="w-64 bg-white shadow-md p-4 fixed h-full">
+        <h2 className="text-2xl font-bold mb-6 text-gray-800">
+          Employer Dashboard
+        </h2>
+        <nav>
+          <ul className="space-y-2">
+            {[
+              { id: "overview", label: "Overview", icon: <FaHome /> },
+              { id: "profile", label: "Profile", icon: <FaUser /> },
+              { id: "postJob", label: "Post Job", icon: <FaBriefcase /> },
+              { id: "jobs", label: "My Jobs", icon: <FaList /> },
+              { id: "applied", label: "Applied Jobs", icon: <FaList /> },
+            ].map((item) => (
+              <li key={item.id}>
+                <button
+                  onClick={() => setActiveSection(item.id)}
+                  className={`flex items-center w-full p-2 rounded-lg ${
+                    activeSection === item.id
+                      ? "bg-blue-600 text-white"
+                      : "text-gray-600 hover:bg-gray-200"
+                  }`}
+                >
+                  {item.icon}
+                  <span className="ml-2">{item.label}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      </aside>
 
-      {/* Profile Section */}
-      <div className="mb-8">
-        <h3 className="text-xl font-semibold mb-2">Employer Profile</h3>
-        <form
-          onSubmit={handleProfileSubmit}
-          className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4"
-        >
-          <input
-            name="company_name"
-            value={profileForm.company_name}
-            onChange={handleProfileChange}
-            placeholder="Company Name"
-            className="p-2 border rounded"
-            required={!profile}
-          />
-          <input
-            name="contact_phone"
-            value={profileForm.contact_phone}
-            onChange={handleProfileChange}
-            placeholder="Contact Phone"
-            className="p-2 border rounded"
-            required={!profile}
-          />
-          <input
-            name="address_line"
-            value={profileForm.address_line}
-            onChange={handleProfileChange}
-            placeholder="Address Line"
-            className="p-2 border rounded"
-          />
-          <input
-            name="city"
-            value={profileForm.city}
-            onChange={handleProfileChange}
-            placeholder="City"
-            className="p-2 border rounded"
-          />
-          <input
-            name="state"
-            value={profileForm.state}
-            onChange={handleProfileChange}
-            placeholder="State"
-            className="p-2 border rounded"
-          />
-          <input
-            name="postal_code"
-            value={profileForm.postal_code}
-            onChange={handleProfileChange}
-            placeholder="Postal Code"
-            className="p-2 border rounded"
-          />
-          <input
-            name="country"
-            value={profileForm.country}
-            onChange={handleProfileChange}
-            placeholder="Country"
-            className="p-2 border rounded"
-          />
-          <input
-            name="website_url"
-            value={profileForm.website_url}
-            onChange={handleProfileChange}
-            placeholder="Website URL"
-            className="p-2 border rounded"
-          />
-          <input
-            name="industry"
-            value={profileForm.industry}
-            onChange={handleProfileChange}
-            placeholder="Industry"
-            className="p-2 border rounded"
-          />
-          <textarea
-            name="company_description"
-            value={profileForm.company_description}
-            onChange={handleProfileChange}
-            placeholder="Company Description"
-            className="p-2 border rounded col-span-2"
-            rows="3"
-          />
-          <div className="col-span-2 flex space-x-4">
-            <button
-              type="submit"
-              className="p-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-              disabled={loading}
+      {/* Main Content */}
+      <main className="flex-1 p-6 ml-64">
+        {loading && <p className="text-gray-500">Loading...</p>}
+        {error && (
+          <div className="mb-6 p-4 bg-red-100 text-red-700 rounded">
+            {error}
+          </div>
+        )}
+        <ToastContainer />
+
+        {/* Overview */}
+        {activeSection === "overview" && (
+          <div>
+            <h2 className="text-2xl font-semibold mb-4 text-gray-700">
+              Overview
+            </h2>
+            <div className="grid gap-6 md:grid-cols-3 mb-6">
+              <div className="bg-white p-4 rounded-lg shadow-md">
+                <h3 className="text-lg font-medium text-gray-600">
+                  Total Jobs
+                </h3>
+                <p className="text-2xl font-bold text-blue-600">
+                  {analytics?.totalJobs || 0}
+                </p>
+              </div>
+              <div className="bg-white p-4 rounded-lg shadow-md">
+                <h3 className="text-lg font-medium text-gray-600">
+                  Total Applications
+                </h3>
+                <p className="text-2xl font-bold text-green-600">
+                  {analytics?.totalApplications || 0}
+                </p>
+              </div>
+              <div className="bg-white p-4 rounded-lg shadow-md">
+                <h3 className="text-lg font-medium text-gray-600">
+                  Profile Status
+                </h3>
+                <p className="text-2xl font-bold text-gray-600">
+                  {profile ? "Complete" : "Incomplete"}
+                </p>
+              </div>
+            </div>
+            <div className="bg-white p-6 rounded-lg shadow-md">
+              <h3 className="text-lg font-medium mb-4">Activity Trends</h3>
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={chartData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="date" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Line
+                    type="monotone"
+                    dataKey="jobs"
+                    stroke="#8884d8"
+                    name="Jobs Posted"
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="applications"
+                    stroke="#82ca9d"
+                    name="Applications"
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        )}
+
+        {/* Profile */}
+        {activeSection === "profile" && (
+          <section className="bg-white p-6 rounded-lg shadow-md">
+            <h2 className="text-2xl font-semibold mb-4 text-gray-700">
+              Profile
+            </h2>
+            {!editingProfile && profile ? (
+              <div>
+                <p>
+                  <strong>Company Name:</strong> {profile.company_name}
+                </p>
+                <p>
+                  <strong>Contact Phone:</strong> {profile.contact_phone}
+                </p>
+                <p>
+                  <strong>Description:</strong> {profile.company_description}
+                </p>
+                {profile.logo_url && (
+                  <img
+                    src={profile.logo_url}
+                    alt="Company Logo"
+                    className="mt-2 max-w-xs"
+                  />
+                )}
+                <button
+                  onClick={() => setEditingProfile(true)}
+                  className="mt-4 p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                >
+                  <FaEdit className="inline mr-2" /> Edit Profile
+                </button>
+              </div>
+            ) : (
+              <form
+                onSubmit={handleProfileSubmit(onProfileSubmit)}
+                className="grid gap-4"
+              >
+                <input
+                  {...registerProfile("company_name", {
+                    required: "Company name is required",
+                  })}
+                  placeholder="Company Name"
+                  className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <input
+                  {...registerProfile("contact_phone", {
+                    required: "Phone is required",
+                  })}
+                  placeholder="Contact Phone"
+                  className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <textarea
+                  {...registerProfile("company_description")}
+                  placeholder="Company Description"
+                  className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  rows="3"
+                />
+                <div>
+                  <label className="block mb-2 text-gray-600">Logo</label>
+                  <div
+                    {...logoDropzone.getRootProps()}
+                    className="p-4 border-2 border-dashed rounded-lg text-center cursor-pointer hover:border-blue-500"
+                  >
+                    <input {...logoDropzone.getInputProps()} />
+                    {logoFile ? logoFile.name : "Drag or click to upload logo"}
+                  </div>
+                </div>
+                <button
+                  type="submit"
+                  className="p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                  disabled={loading}
+                >
+                  {profile ? "Update Profile" : "Create Profile"}
+                </button>
+                {profile && (
+                  <button
+                    type="button"
+                    onClick={() => setEditingProfile(false)}
+                    className="p-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 mt-2"
+                  >
+                    Cancel
+                  </button>
+                )}
+              </form>
+            )}
+          </section>
+        )}
+
+        {/* Post Job */}
+        {activeSection === "postJob" && (
+          <section className="bg-white p-6 rounded-lg shadow-md">
+            <h2 className="text-2xl font-semibold mb-4 text-gray-700">
+              Post a Job
+            </h2>
+            <form
+              onSubmit={handleJobSubmit(onJobSubmit)}
+              className="grid gap-4"
             >
-              {profile ? "Update Profile" : "Create Profile"}
-            </button>
-            {profile && (
+              <input
+                {...registerJob("title", { required: "Title is required" })}
+                placeholder="Job Title"
+                className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <textarea
+                {...registerJob("description", {
+                  required: "Description is required",
+                })}
+                placeholder="Description"
+                className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                rows="3"
+              />
+              <select
+                {...registerJob("employment_type")}
+                className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="full_time">Full Time</option>
+                <option value="part_time">Part Time</option>
+                <option value="contract">Contract</option>
+                <option value="internship">Internship</option>
+                <option value="apprenticeship">Apprenticeship</option>
+              </select>
+              <input
+                {...registerJob("salary_min")}
+                type="number"
+                placeholder="Minimum Salary"
+                className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <input
+                {...registerJob("salary_max")}
+                type="number"
+                placeholder="Maximum Salary"
+                className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <input
+                {...registerJob("location")}
+                placeholder="Location (e.g., City, State)"
+                className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <input
+                {...registerJob("address")}
+                placeholder="Address"
+                className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <input
+                {...registerJob("category")}
+                placeholder="Category (e.g., IT, Sales)"
+                className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <input
+                {...registerJob("application_deadline")}
+                type="date"
+                placeholder="Application Deadline"
+                className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <div>
+                <label className="block mb-2 text-gray-600">Requirements</label>
+                <div className="flex items-center gap-2 mb-2">
+                  <input
+                    type="text"
+                    value={newRequirement}
+                    onChange={(e) => setNewRequirement(e.target.value)}
+                    placeholder="Add a requirement"
+                    className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 flex-1"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => addRequirement("post")}
+                    className="p-3 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                  >
+                    <FaPlus />
+                  </button>
+                </div>
+                <ul className="space-y-2">
+                  {jobForm.requirements.map((req, index) => (
+                    <li
+                      key={index}
+                      className="flex items-center justify-between bg-gray-100 p-2 rounded-lg"
+                    >
+                      <span>{req}</span>
+                      <button
+                        type="button"
+                        onClick={() => deleteRequirement(index, "post")}
+                        className="text-red-600 hover:text-red-800"
+                      >
+                        <FaTrash />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <label className="block mb-2 text-gray-600">
+                  Responsibilities
+                </label>
+                <div className="flex items-center gap-2 mb-2">
+                  <input
+                    type="text"
+                    value={newResponsibility}
+                    onChange={(e) => setNewResponsibility(e.target.value)}
+                    placeholder="Add a responsibility"
+                    className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 flex-1"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => addResponsibility("post")}
+                    className="p-3 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                  >
+                    <FaPlus />
+                  </button>
+                </div>
+                <ul className="space-y-2">
+                  {jobForm.responsibilities.map((resp, index) => (
+                    <li
+                      key={index}
+                      className="flex items-center justify-between bg-gray-100 p-2 rounded-lg"
+                    >
+                      <span>{resp}</span>
+                      <button
+                        type="button"
+                        onClick={() => deleteResponsibility(index, "post")}
+                        className="text-red-600 hover:text-red-800"
+                      >
+                        <FaTrash />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <label className="block mb-2 text-gray-600">Post Image</label>
+                <div
+                  {...postImageDropzone.getRootProps()}
+                  className="p-4 border-2 border-dashed rounded-lg text-center cursor-pointer hover:border-blue-500"
+                >
+                  <input {...postImageDropzone.getInputProps()} />
+                  {jobForm.post_image
+                    ? jobForm.post_image.name
+                    : "Drag or click to upload"}
+                </div>
+              </div>
               <button
-                type="button"
-                onClick={handleDeleteProfile}
-                className="p-2 bg-red-500 text-white rounded hover:bg-red-600"
+                type="submit"
+                className="p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                 disabled={loading}
               >
-                Delete Profile
+                Post Job
               </button>
-            )}
-          </div>
-        </form>
-      </div>
+            </form>
+          </section>
+        )}
 
-      {/* Job Posting Section */}
-      <div className="mb-8">
-        <h3 className="text-xl font-semibold mb-2">Post a Job</h3>
-        <form
-          onSubmit={handleJobSubmit}
-          className="grid grid-cols-1 md:grid-cols-2 gap-4"
-        >
-          <input
-            name="title"
-            value={jobForm.title}
-            onChange={handleJobChange}
-            placeholder="Job Title"
-            className="p-2 border rounded"
-            required
-          />
-          <textarea
-            name="description"
-            value={jobForm.description}
-            onChange={handleJobChange}
-            placeholder="Description"
-            className="p-2 border rounded col-span-2"
-            rows="3"
-            required
-          />
-          <input
-            name="salary_min"
-            value={jobForm.salary_min}
-            onChange={handleJobChange}
-            placeholder="Minimum Salary"
-            type="number"
-            className="p-2 border rounded"
-          />
-          <input
-            name="salary_max"
-            value={jobForm.salary_max}
-            onChange={handleJobChange}
-            placeholder="Maximum Salary"
-            type="number"
-            className="p-2 border rounded"
-          />
-          <input
-            name="location"
-            value={jobForm.location}
-            onChange={handleJobChange}
-            placeholder="Location"
-            className="p-2 border rounded"
-          />
-          <input
-            name="address"
-            value={jobForm.address}
-            onChange={handleJobChange}
-            placeholder="Address"
-            className="p-2 border rounded"
-          />
-          <select
-            name="employment_type"
-            value={jobForm.employment_type}
-            onChange={handleJobChange}
-            className="p-2 border rounded"
-          >
-            <option value="full_time">Full Time</option>
-            <option value="part_time">Part Time</option>
-            <option value="contract">Contract</option>
-            <option value="internship">Internship</option>
-            <option value="apprenticeship">Apprenticeship</option>
-          </select>
-          <input
-            name="category"
-            value={jobForm.category}
-            onChange={handleJobChange}
-            placeholder="Category"
-            className="p-2 border rounded"
-          />
-          <input
-            name="application_deadline"
-            value={jobForm.application_deadline}
-            onChange={handleJobChange}
-            placeholder="Application Deadline (YYYY-MM-DD)"
-            type="date"
-            className="p-2 border rounded"
-          />
-          <div>
-            <label className="block mb-1">Company Logo</label>
-            <input
-              name="company_logo"
-              type="file"
-              onChange={handleJobChange}
-              accept="image/*"
-              className="p-2"
-            />
-          </div>
-          <div>
-            <label className="block mb-1">Post Image</label>
-            <input
-              name="post_image"
-              type="file"
-              onChange={handleJobChange}
-              accept="image/*"
-              className="p-2"
-            />
-          </div>
-          <div className="col-span-2">
-            <label className="block mb-1">Requirements</label>
-            <div className="flex mb-2">
-              <input
-                value={requirementInput}
-                onChange={(e) => setRequirementInput(e.target.value)}
-                placeholder="Add a requirement"
-                className="p-2 border rounded flex-grow"
-              />
-              <button
-                type="button"
-                onClick={addRequirement}
-                className="p-2 bg-green-500 text-white rounded ml-2"
-              >
-                Add
-              </button>
-            </div>
-            <ul>
-              {jobForm.requirements.map((req, index) => (
-                <li key={index} className="mb-1 flex justify-between">
-                  {req}
-                  <button
-                    onClick={() =>
-                      setJobForm({
-                        ...jobForm,
-                        requirements: jobForm.requirements.filter(
-                          (_, i) => i !== index
-                        ),
-                      })
-                    }
-                    className="text-red-500"
-                  >
-                    Remove
-                  </button>
+        {/* My Jobs */}
+        {activeSection === "jobs" && (
+          <section className="bg-white p-6 rounded-lg shadow-md">
+            <h2 className="text-2xl font-semibold mb-4 text-gray-700">
+              My Jobs
+            </h2>
+            <ul className="space-y-4">
+              {jobs.map((job) => (
+                <li key={job.id} className="p-4 bg-gray-50 rounded-lg">
+                  {editingJobId !== job.id ? (
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <p className="text-lg font-medium text-gray-800">
+                          {job.title}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          Posted: {new Date(job.posted_at).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => handleEditJob(job)}
+                          className="text-blue-600 hover:text-blue-800"
+                        >
+                          <FaEdit />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteJob(job.id)}
+                          className="text-red-600 hover:text-red-800"
+                        >
+                          <FaTrash />
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="p-4 bg-gray-100 rounded-lg">
+                      <h3 className="text-xl font-semibold mb-4 text-gray-700">
+                        Edit Job
+                      </h3>
+                      <form
+                        onSubmit={handleEditJobSubmit((data) =>
+                          onEditJobSubmit(data, job.id)
+                        )}
+                        className="grid gap-4"
+                      >
+                        <input
+                          {...registerEditJob("title", {
+                            required: "Title is required",
+                          })}
+                          placeholder="Job Title"
+                          className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                        <textarea
+                          {...registerEditJob("description", {
+                            required: "Description is required",
+                          })}
+                          placeholder="Description"
+                          className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          rows="3"
+                        />
+                        <select
+                          {...registerEditJob("employment_type")}
+                          className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                          <option value="full_time">Full Time</option>
+                          <option value="part_time">Part Time</option>
+                          <option value="contract">Contract</option>
+                          <option value="internship">Internship</option>
+                          <option value="apprenticeship">Apprenticeship</option>
+                        </select>
+                        <input
+                          {...registerEditJob("salary_min")}
+                          type="number"
+                          placeholder="Minimum Salary"
+                          className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                        <input
+                          {...registerEditJob("salary_max")}
+                          type="number"
+                          placeholder="Maximum Salary"
+                          className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                        <input
+                          {...registerEditJob("location")}
+                          placeholder="Location (e.g., City, State)"
+                          className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                        <input
+                          {...registerEditJob("address")}
+                          placeholder="Address"
+                          className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                        <input
+                          {...registerEditJob("category")}
+                          placeholder="Category (e.g., IT, Sales)"
+                          className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                        <input
+                          {...registerEditJob("application_deadline")}
+                          type="date"
+                          placeholder="Application Deadline"
+                          className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                        <div>
+                          <label className="block mb-2 text-gray-600">
+                            Requirements
+                          </label>
+                          <div className="flex items-center gap-2 mb-2">
+                            <input
+                              type="text"
+                              value={newRequirement}
+                              onChange={(e) =>
+                                setNewRequirement(e.target.value)
+                              }
+                              placeholder="Add a requirement"
+                              className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 flex-1"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => addRequirement("edit")}
+                              className="p-3 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                            >
+                              <FaPlus />
+                            </button>
+                          </div>
+                          <ul className="space-y-2">
+                            {editJobForm.requirements.map((req, index) => (
+                              <li
+                                key={index}
+                                className="flex items-center justify-between bg-gray-200 p-2 rounded-lg"
+                              >
+                                <span>{req}</span>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    deleteRequirement(index, "edit")
+                                  }
+                                  className="text-red-600 hover:text-red-800"
+                                >
+                                  <FaTrash />
+                                </button>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                        <div>
+                          <label className="block mb-2 text-gray-600">
+                            Responsibilities
+                          </label>
+                          <div className="flex items-center gap-2 mb-2">
+                            <input
+                              type="text"
+                              value={newResponsibility}
+                              onChange={(e) =>
+                                setNewResponsibility(e.target.value)
+                              }
+                              placeholder="Add a responsibility"
+                              className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 flex-1"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => addResponsibility("edit")}
+                              className="p-3 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                            >
+                              <FaPlus />
+                            </button>
+                          </div>
+                          <ul className="space-y-2">
+                            {editJobForm.responsibilities.map((resp, index) => (
+                              <li
+                                key={index}
+                                className="flex items-center justify-between bg-gray-200 p-2 rounded-lg"
+                              >
+                                <span>{resp}</span>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    deleteResponsibility(index, "edit")
+                                  }
+                                  className="text-red-600 hover:text-red-800"
+                                >
+                                  <FaTrash />
+                                </button>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                        <div>
+                          <label className="block mb-2 text-gray-600">
+                            Post Image
+                          </label>
+                          <div
+                            {...editPostImageDropzone.getRootProps()}
+                            className="p-4 border-2 border-dashed rounded-lg text-center cursor-pointer hover:border-blue-500"
+                          >
+                            <input {...editPostImageDropzone.getInputProps()} />
+                            {editJobForm.post_image
+                              ? editJobForm.post_image.name
+                              : "Drag or click to upload"}
+                          </div>
+                        </div>
+                        <div className="flex space-x-4">
+                          <button
+                            type="submit"
+                            className="p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                            disabled={loading}
+                          >
+                            Update Job
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setEditingJobId(null)}
+                            className="p-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </form>
+                    </div>
+                  )}
                 </li>
               ))}
             </ul>
-          </div>
-          <div className="col-span-2">
-            <label className="block mb-1">Responsibilities</label>
-            <div className="flex mb-2">
-              <input
-                value={responsibilityInput}
-                onChange={(e) => setResponsibilityInput(e.target.value)}
-                placeholder="Add a responsibility"
-                className="p-2 border rounded flex-grow"
-              />
-              <button
-                type="button"
-                onClick={addResponsibility}
-                className="p-2 bg-green-500 text-white rounded ml-2"
-              >
-                Add
-              </button>
-            </div>
-            <ul>
-              {jobForm.responsibilities.map((resp, index) => (
-                <li key={index} className="mb-1 flex justify-between">
-                  {resp}
-                  <button
-                    onClick={() =>
-                      setJobForm({
-                        ...jobForm,
-                        responsibilities: jobForm.responsibilities.filter(
-                          (_, i) => i !== index
-                        ),
-                      })
-                    }
-                    className="text-red-500"
-                  >
-                    Remove
-                  </button>
+          </section>
+        )}
+
+        {/* Applied Jobs */}
+        {activeSection === "applied" && (
+          <section className="bg-white p-6 rounded-lg shadow-md">
+            <h2 className="text-2xl font-semibold mb-4 text-gray-700">
+              Applied Jobs
+            </h2>
+            <ul className="space-y-4">
+              {appliedJobs.map((job) => (
+                <li key={job.id} className="p-4 bg-gray-50 rounded-lg">
+                  {editingAppliedJobId !== job.id ? (
+                    <>
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <p className="text-lg font-medium text-gray-800">
+                            {job.title}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            Applications: {job.application_count} | Status:{" "}
+                            {job.is_active ? "Active" : "Inactive"}
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => handleEditJob(job, true)}
+                          className="text-blue-600 hover:text-blue-800"
+                        >
+                          <FaEdit />
+                        </button>
+                      </div>
+                      {job.applications && job.applications.length > 0 && (
+                        <div className="mt-2">
+                          <h3 className="text-sm font-semibold text-gray-700">
+                            Applicants:
+                          </h3>
+                          <ul className="space-y-2">
+                            {job.applications.map((app) => (
+                              <li
+                                key={app.id}
+                                className="flex items-center justify-between"
+                              >
+                                <span>Applicant ID: {app.user_id}</span>
+                                <select
+                                  value={app.status}
+                                  onChange={(e) =>
+                                    handleStatusChange(app.id, e.target.value)
+                                  }
+                                  className="p-1 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                >
+                                  <option value="pending">Pending</option>
+                                  <option value="reviewed">Reviewed</option>
+                                  <option value="interviewed">
+                                    Interviewed
+                                  </option>
+                                  <option value="offered">Offered</option>
+                                  <option value="rejected">Rejected</option>
+                                  <option value="withdrawn">Withdrawn</option>
+                                </select>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div className="p-4 bg-gray-100 rounded-lg">
+                      <h3 className="text-xl font-semibold mb-4 text-gray-700">
+                        Edit Job
+                      </h3>
+                      <form
+                        onSubmit={handleEditJobSubmit((data) =>
+                          onEditJobSubmit(data, job.id, true)
+                        )}
+                        className="grid gap-4"
+                      >
+                        <input
+                          {...registerEditJob("title", {
+                            required: "Title is required",
+                          })}
+                          placeholder="Job Title"
+                          className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                        <textarea
+                          {...registerEditJob("description", {
+                            required: "Description is required",
+                          })}
+                          placeholder="Description"
+                          className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          rows="3"
+                        />
+                        <select
+                          {...registerEditJob("employment_type")}
+                          className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                          <option value="full_time">Full Time</option>
+                          <option value="part_time">Part Time</option>
+                          <option value="contract">Contract</option>
+                          <option value="internship">Internship</option>
+                          <option value="apprenticeship">Apprenticeship</option>
+                        </select>
+                        <input
+                          {...registerEditJob("salary_min")}
+                          type="number"
+                          placeholder="Minimum Salary"
+                          className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                        <input
+                          {...registerEditJob("salary_max")}
+                          type="number"
+                          placeholder="Maximum Salary"
+                          className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                        <input
+                          {...registerEditJob("location")}
+                          placeholder="Location (e.g., City, State)"
+                          className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                        <input
+                          {...registerEditJob("address")}
+                          placeholder="Address"
+                          className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                        <input
+                          {...registerEditJob("category")}
+                          placeholder="Category (e.g., IT, Sales)"
+                          className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                        <input
+                          {...registerEditJob("application_deadline")}
+                          type="date"
+                          placeholder="Application Deadline"
+                          className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                        <div>
+                          <label className="block mb-2 text-gray-600">
+                            Requirements
+                          </label>
+                          <div className="flex items-center gap-2 mb-2">
+                            <input
+                              type="text"
+                              value={newRequirement}
+                              onChange={(e) =>
+                                setNewRequirement(e.target.value)
+                              }
+                              placeholder="Add a requirement"
+                              className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 flex-1"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => addRequirement("edit")}
+                              className="p-3 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                            >
+                              <FaPlus />
+                            </button>
+                          </div>
+                          <ul className="space-y-2">
+                            {editJobForm.requirements.map((req, index) => (
+                              <li
+                                key={index}
+                                className="flex items-center justify-between bg-gray-200 p-2 rounded-lg"
+                              >
+                                <span>{req}</span>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    deleteRequirement(index, "edit")
+                                  }
+                                  className="text-red-600 hover:text-red-800"
+                                >
+                                  <FaTrash />
+                                </button>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                        <div>
+                          <label className="block mb-2 text-gray-600">
+                            Responsibilities
+                          </label>
+                          <div className="flex items-center gap-2 mb-2">
+                            <input
+                              type="text"
+                              value={newResponsibility}
+                              onChange={(e) =>
+                                setNewResponsibility(e.target.value)
+                              }
+                              placeholder="Add a responsibility"
+                              className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 flex-1"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => addResponsibility("edit")}
+                              className="p-3 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                            >
+                              <FaPlus />
+                            </button>
+                          </div>
+                          <ul className="space-y-2">
+                            {editJobForm.responsibilities.map((resp, index) => (
+                              <li
+                                key={index}
+                                className="flex items-center justify-between bg-gray-200 p-2 rounded-lg"
+                              >
+                                <span>{resp}</span>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    deleteResponsibility(index, "edit")
+                                  }
+                                  className="text-red-600 hover:text-red-800"
+                                >
+                                  <FaTrash />
+                                </button>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                        <div>
+                          <label className="block mb-2 text-gray-600">
+                            Post Image
+                          </label>
+                          <div
+                            {...editPostImageDropzone.getRootProps()}
+                            className="p-4 border-2 border-dashed rounded-lg text-center cursor-pointer hover:border-blue-500"
+                          >
+                            <input {...editPostImageDropzone.getInputProps()} />
+                            {editJobForm.post_image
+                              ? editJobForm.post_image.name
+                              : "Drag or click to upload"}
+                          </div>
+                        </div>
+                        <div className="flex space-x-4">
+                          <button
+                            type="submit"
+                            className="p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                            disabled={loading}
+                          >
+                            Update Job
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setEditingAppliedJobId(null)}
+                            className="p-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </form>
+                    </div>
+                  )}
                 </li>
               ))}
             </ul>
-          </div>
-          <button
-            type="submit"
-            className="col-span-2 p-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-            disabled={loading}
-          >
-            Post Job
-          </button>
-        </form>
-      </div>
-
-      {/* Jobs List */}
-      <div>
-        <h3 className="text-xl font-semibold mb-2">Posted Jobs</h3>
-        <ul className="mt-4">
-          {jobs.map((job) => (
-            <li key={job.id} className="mb-2">
-              {job.title}
-            </li>
-          ))}
-        </ul>
-      </div>
+          </section>
+        )}
+      </main>
     </div>
   );
 };
