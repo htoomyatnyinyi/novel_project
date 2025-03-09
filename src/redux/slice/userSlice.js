@@ -1,15 +1,16 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
-import dotenv from "dotenv";
 
-dotenv.config();
+// const api = axios.create({
+//   baseURL: "http://localhost:8080/api",
+//   // baseURL: `${process.env.BACKEND_API}/api`,
+//   withCredentials: true,
+// });
 
 const api = axios.create({
-  // baseURL: "http://localhost:8080/api",
-  baseURL: `${process.env.BACKEND_API}/api`,
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:8080/api",
   withCredentials: true,
 });
-
 export const createUser = createAsyncThunk("users/create", async (data) => {
   const { data: res } = await api.post("/users", data);
   return res.data;

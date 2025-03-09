@@ -1,20 +1,22 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
-import dotenv from "dotenv";
 
-dotenv.config();
-
+// const api = axios.create({
+//   // baseURL: "http://localhost:8080/api/employer",
+//   // baseURL: `${process.env.BACKEND_API}/api/employer`,
+//   // baseURL: "https://job-diary.onrender.com/api",
+//   baseURL: process.env.BACKEND_API,
+//   withCredentials: true,
+// });
 const api = axios.create({
-  // baseURL: "http://localhost:8080/api/employer",
-  baseURL: `${process.env.BACKEND_API}/api/employer`,
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:8080/api",
   withCredentials: true,
 });
-
 export const fetchProfile = createAsyncThunk(
   "employer/fetchProfile",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await api.get("/profile");
+      const response = await api.get("employer/profile");
       if (!response.data.success) throw new Error(response.data.message);
       return response.data.data;
     } catch (error) {
@@ -27,7 +29,7 @@ export const createProfile = createAsyncThunk(
   "employer/createProfile",
   async (formData, { rejectWithValue }) => {
     try {
-      const response = await api.post("/profile", formData, {
+      const response = await api.post("employer/profile", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       if (!response.data.success) throw new Error(response.data.message);
@@ -42,7 +44,7 @@ export const updateProfile = createAsyncThunk(
   "employer/updateProfile",
   async (formData, { rejectWithValue }) => {
     try {
-      const response = await api.put("/profile", formData, {
+      const response = await api.put("employer/profile", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       if (!response.data.success) throw new Error(response.data.message);
@@ -57,7 +59,7 @@ export const deleteProfile = createAsyncThunk(
   "employer/deleteProfile",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await api.delete("/profile");
+      const response = await api.delete("employer/profile");
       if (!response.data.success) throw new Error(response.data.message);
       return response.data;
     } catch (error) {
@@ -70,7 +72,7 @@ export const fetchJobs = createAsyncThunk(
   "employer/fetchJobs",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await api.get("/jobs");
+      const response = await api.get("employer/jobs");
       if (!response.data.success) throw new Error(response.data.message);
       return response.data.data;
     } catch (error) {
@@ -83,7 +85,7 @@ export const createJob = createAsyncThunk(
   "employer/createJob",
   async (formData, { rejectWithValue }) => {
     try {
-      const response = await api.post("/jobs", formData, {
+      const response = await api.post("employer/jobs", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       if (!response.data.success) throw new Error(response.data.message);
@@ -98,7 +100,7 @@ export const updateJob = createAsyncThunk(
   "employer/updateJob",
   async ({ jobId, formData }, { rejectWithValue }) => {
     try {
-      const response = await api.put(`/jobs/${jobId}`, formData, {
+      const response = await api.put(`employer/jobs/${jobId}`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       if (!response.data.success) throw new Error(response.data.message);
@@ -113,7 +115,7 @@ export const deleteJob = createAsyncThunk(
   "employer/deleteJob",
   async (jobId, { rejectWithValue }) => {
     try {
-      const response = await api.delete(`/jobs/${jobId}`);
+      const response = await api.delete(`employer/jobs/${jobId}`);
       if (!response.data.success) throw new Error(response.data.message);
       return jobId;
     } catch (error) {
@@ -126,7 +128,7 @@ export const fetchAppliedJobs = createAsyncThunk(
   "employer/fetchAppliedJobs",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await api.get("/applied-jobs");
+      const response = await api.get("employer/applied-jobs");
       if (!response.data.success) {
         console.error("Fetch applied jobs failed:", response.data.message);
         throw new Error(response.data.message);
@@ -143,7 +145,7 @@ export const fetchAnalytics = createAsyncThunk(
   "employer/fetchAnalytics",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await api.get("/analytics");
+      const response = await api.get("employer/analytics");
       if (!response.data.success) throw new Error(response.data.message);
       return response.data.data;
     } catch (error) {
@@ -156,9 +158,12 @@ export const updateApplicationStatus = createAsyncThunk(
   "employer/updateApplicationStatus",
   async ({ applicationId, status }, { rejectWithValue }) => {
     try {
-      const response = await api.put(`/applications/${applicationId}/status`, {
-        status,
-      });
+      const response = await api.put(
+        `employer/applications/${applicationId}/status`,
+        {
+          status,
+        }
+      );
       if (!response.data.success) throw new Error(response.data.message);
       return { applicationId, status };
     } catch (error) {
