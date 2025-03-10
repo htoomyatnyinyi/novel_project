@@ -7,7 +7,7 @@ import axios from "axios";
 //   withCredentials: true,
 // });
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "https://job-diary.onrender.com",
+  baseURL: import.meta.env.VITE_API_URL || "https://job-diary.onrender.com/api",
   withCredentials: true,
 });
 
@@ -17,7 +17,7 @@ export const loginUser = createAsyncThunk(
   "auth/login",
   async ({ email, password }, { rejectWithValue }) => {
     try {
-      const { data } = await api.post("/api/auth/login", { email, password });
+      const { data } = await api.post("/auth/login", { email, password });
       return data.user; // Assuming backend returns { user: { id, email, role } }
     } catch (error) {
       return rejectWithValue(error.response?.data.message || "Login failed");
@@ -26,8 +26,8 @@ export const loginUser = createAsyncThunk(
 );
 
 // Logout thunk
-export const logoutUser = createAsyncThunk("/api/auth/logout", async () => {
-  await api.post("/api/auth/logout");
+export const logoutUser = createAsyncThunk("/auth/logout", async () => {
+  await api.post("/auth/logout");
 });
 
 // Validate token thunk (to check if session is still valid on refresh)
@@ -35,7 +35,7 @@ export const validateToken = createAsyncThunk(
   "auth/validateToken",
   async (_, { rejectWithValue }) => {
     try {
-      const { data } = await api.get("/api/auth/me"); // Add this endpoint in backend if not present
+      const { data } = await api.get("/auth/me"); // Add this endpoint in backend if not present
       return data.user;
     } catch (error) {
       return rejectWithValue(

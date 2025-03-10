@@ -11,6 +11,7 @@ const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || "https://job-diary.onrender.com/api",
   withCredentials: true,
 });
+
 // User CRUD Thunks
 export const fetchUsers = createAsyncThunk(
   "admin/fetchUsers",
