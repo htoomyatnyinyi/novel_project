@@ -29,7 +29,6 @@ export const store = configureStore({
 
 export const persistor = persistStore(store);
 
-
 // // frontend/src/app/store.js
 
 // import { configureStore } from "@reduxjs/toolkit";
