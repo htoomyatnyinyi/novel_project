@@ -120,7 +120,7 @@ const JobSeekerDashboard = () => {
         {profile && (
           <div className="flex flex-col sm:flex-row justify-center gap-4 mb-8">
             <Link
-              to="/job_seeker/search"
+              to="/"
               className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition duration-300"
             >
               Search Jobs
