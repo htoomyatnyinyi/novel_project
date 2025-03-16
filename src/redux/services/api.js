@@ -5,22 +5,22 @@ const api = axios.create({
   withCredentials: true,
 });
 
-// Optional: Add interceptors for handling tokens, errors, etc.
-api.interceptors.request.use(
-  (config) => {
-    // console.log(config, " check at interceptors");
-    // Add any request modifications here, e.g., attaching tokens
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
+// // Optional: Add interceptors for handling tokens, errors, etc.
+// api.interceptors.request.use(
+//   (config) => {
+//     // console.log(config, " check at interceptors");
+//     // Add any request modifications here, e.g., attaching tokens
+//     return config;
+//   },
+//   (error) => Promise.reject(error)
+// );
 
-api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    // Handle global errors (e.g., 401 for unauthorized)
-    return Promise.reject(error);
-  }
-);
+// api.interceptors.response.use(
+//   (response) => response,
+//   (error) => {
+//     // Handle global errors (e.g., 401 for unauthorized)
+//     return Promise.reject(error);
+//   }
+// );
 
 export default api;
