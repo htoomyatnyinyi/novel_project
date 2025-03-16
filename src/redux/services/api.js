@@ -1,18 +1,12 @@
 import axios from "axios";
-import dotenv from "dotenv";
 
-dotenv.config();
+console.log(import.meta.env.VITE_API_URL, "meta api");
 
-console.log(
-  import.meta.env.VITE_API_URL,
-  "meta api",
-  process.env.VITE_API_URL,
-  "dotenv"
-);
+const url = import.meta.env.VITE_API_URL;
 
 const api = axios.create({
   // baseURL: import.meta.env.VITE_API_URL || "http://localhost:8080/api",
-  baseURL: "https://nobel-server.onrender.com/api" || process.env.VITE_API_URL,
+  baseURL: "https://nobel-server.onrender.com/api" || `${url}`,
   withCredentials: true,
 });
 // // Optional: Add interceptors for handling tokens, errors, etc.
