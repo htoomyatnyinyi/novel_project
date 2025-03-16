@@ -16,6 +16,7 @@ import JobSeekerDashboard from "./components/JobSeekerDashboard";
 import SearchJobs from "./components/SearchJobs";
 import ProfilePage from "./components/ProfilePage";
 import Home from "./pages/Home";
+import EditProfilePage from "./components/EditPorfilePage";
 
 const App = () => {
   const dispatch = useDispatch();
@@ -86,6 +87,14 @@ const App = () => {
               element={
                 <PrivateRoute role="job_seeker">
                   <JobSeekerDashboard />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/job_seeker/edit-profile"
+              element={
+                <PrivateRoute role="job_seeker">
+                  <EditProfilePage />
                 </PrivateRoute>
               }
             />
