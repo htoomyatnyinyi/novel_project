@@ -1,18 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
+import api from "../services/api.js";
 
-// const api = axios.create({
-//   baseURL: "http://localhost:8080/api",
-//   // baseURL: "https://job-diary.onrender.com/api",
-//   withCredentials: true,
-// });
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "https://job-diary.onrender.com/api",
-  withCredentials: true,
-});
-
-console.log(import.meta.env.VITE_API_URL);
-// Login thunk
 export const loginUser = createAsyncThunk(
   "auth/login",
   async ({ email, password }, { rejectWithValue }) => {

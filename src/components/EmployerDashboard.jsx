@@ -41,7 +41,7 @@ const EmployerDashboard = () => {
   const { profile, jobs, appliedJobs, analytics, loading, error } = useSelector(
     (state) => state.employer
   );
-  console.log(profile);
+  // console.log(profile);
   const [activeSection, setActiveSection] = useState("overview");
   const [editingProfile, setEditingProfile] = useState(false);
   const [editingJobId, setEditingJobId] = useState(null); // For My Jobs

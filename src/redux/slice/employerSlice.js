@@ -1,19 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
+import api from "../services/api";
 
-// const api = axios.create({
-//   // baseURL: "http://localhost:8080/api/employer",
-//   // baseURL: `${process.env.BACKEND_API}/api/employer`,
-//   // baseURL: "https://job-diary.onrender.com/api",
-//   baseURL: process.env.BACKEND_API,
-//   withCredentials: true,
-// });
-const api = axios.create({
-  // baseURL: import.meta.env.VITE_API_URL,
-  baseURL: import.meta.env.VITE_API_URL || "https://job-diary.onrender.com/api",
-
-  withCredentials: true,
-});
 export const fetchProfile = createAsyncThunk(
   "employer/fetchProfile",
   async (_, { rejectWithValue }) => {
@@ -257,7 +244,9 @@ const employerSlice = createSlice({
   },
 });
 
-export default employerSlice.reducer; // import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+export default employerSlice.reducer;
+
+// import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 // import axios from "axios";
 
 // // Axios instance with default config

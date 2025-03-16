@@ -120,7 +120,7 @@ const Navbar = () => {
               Home
             </Link>
             <Link
-              to="/job-seeker/search"
+              to="/job_seeker/search"
               className="text-sm font-medium hover:text-cyan-300 transition-colors duration-200"
             >
               Search Jobs
@@ -324,7 +324,7 @@ const Navbar = () => {
               Home
             </Link>
             <Link
-              to="/job-seeker/search"
+              to="/job_seeker/search"
               className="block text-sm font-medium hover:text-cyan-300 transition-colors duration-200"
               onClick={() => setIsOpen(false)}
             >
