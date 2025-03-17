@@ -4,19 +4,16 @@ import "./index.css";
 import App from "./App.jsx";
 
 import { Provider } from "react-redux";
-// import store from "./redux/store.js";
-import { PersistGate } from "redux-persist/integration/react";
-import { store, persistor } from "./redux/store.js";
+import store from "./redux/store.js";
+// import { PersistGate } from "redux-persist/integration/react";
+// import { store, persistor } from "./redux/store.js";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <Provider store={store}>
-      <PersistGate loading={null} persistor={persistor}>
-        <App />
-      </PersistGate>
+      {/* <PersistGate loading={null} persistor={persistor}>
+      </PersistGate> */}
+      <App />
     </Provider>
   </StrictMode>
 );
-
-// import { PersistGate } from 'redux-persist/integration/react';
-// import { store, persistor } from './store';

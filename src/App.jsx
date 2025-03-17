@@ -35,7 +35,8 @@ const App = () => {
 
     if (!user) {
       // Preserve the intended destination
-      return <Navigate to="/login" state={{ from: location }} replace />;
+      // return <Navigate to="/login" state={{ from: location }} replace />;
+      return <Navigate to="/" state={{ from: location }} replace />;
     }
 
     if (user.role !== role) {
@@ -55,7 +56,7 @@ const App = () => {
             <Route path="/home" element={<Home />} />
             <Route path="/" element={<SearchJobs />} />
             <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Login />} />{" "}
+            <Route path="/register" element={<Login />} />
             {/* Consider creating Register component */}
             {/* Consolidated profile routes */}
             <Route
