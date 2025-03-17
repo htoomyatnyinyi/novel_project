@@ -2,13 +2,14 @@ import axios from "axios";
 
 // console.log(import.meta.env.VITE_API_URL, "meta api");
 
-const url = import.meta.env.VITE_API_URL;
+const url = import.meta.env.VITE_API_URL; // production
 
 const api = axios.create({
-  // baseURL: import.meta.env.VITE_API_URL || "http://localhost:8080/api",
-  baseURL: `${url}` || "https://nobel-server.onrender.com/api",
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:8080/api", // development
+  // baseURL: `${url}` || "https://nobel-server.onrender.com/api", // production
   withCredentials: true,
 });
+
 // // Optional: Add interceptors for handling tokens, errors, etc.
 // api.interceptors.request.use(
 //   (config) => {

@@ -51,6 +51,50 @@ export const fetchResumes = createAsyncThunk(
   }
 );
 
+// export const fetchfileResume = createAsyncThunk(
+//   "jobSeeker/fetchfileResume",
+//   async (filename, { rejectWithValue }) => {
+//     try {
+//       // Construct the URL directly since the backend serves files statically
+//       const fileUrl = `/uploads/${filename}`;
+//       console.log(fileUrl, "at api return");
+//       return fileUrl;
+//     } catch (error) {
+//       return rejectWithValue(error.message);
+//     }
+//   }
+// );
+
+export const fetchfileResume = createAsyncThunk(
+  "jobSeeker/fetchfileResume",
+  async (filename, { rejectWithValue }) => {
+    try {
+      // Use the endpoint instead of a static URL
+      const response = await api.get(`/job-seeker/resumes/${filename}`, {
+        responseType: "blob", // Important for binary data
+      });
+      const fileUrl = URL.createObjectURL(response.data);
+      return fileUrl;
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+// export const fetchfileResume = createAsyncThunk(
+//   "jobSeeker/fetchfileResume",
+//   async (filename, { rejectWithValue }) => {
+//     console.log(filename, "filename");
+//     try {
+//       const response = await api.get(`/job-seeker/resumes/${filename}`);
+//       if (!response.ok) throw new Error("Failed to fetch file");
+//       console.log(response, response.url, "return");
+//       return response.url; // Return the file URL
+//     } catch (error) {
+//       return rejectWithValue(error.message);
+//     }
+//   }
+// );
+
 export const deleteResume = createAsyncThunk(
   "jobSeeker/deleteResume",
   async (id) => {
@@ -143,6 +187,7 @@ const jobSeekerSlice = createSlice({
   initialState: {
     profile: null,
     resumes: [],
+    fileUrl: null,
     savedJobs: [],
     applications: [],
     searchResults: [], // Add searchResults to state
@@ -150,7 +195,11 @@ const jobSeekerSlice = createSlice({
     loading: false,
     error: null,
   },
-  reducers: {},
+  reducers: {
+    clearFileUrl: (state) => {
+      state.fileUrl = null;
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(createProfile.fulfilled, (state, action) => {
@@ -171,6 +220,27 @@ const jobSeekerSlice = createSlice({
       .addCase(fetchResumes.fulfilled, (state, action) => {
         state.resumes = action.payload;
       })
+      .addCase(fetchfileResume.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchfileResume.fulfilled, (state, action) => {
+        state.loading = false;
+        state.fileUrl = action.payload;
+      })
+      .addCase(fetchfileResume.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // // .addCase(fetchfileResume.pending, (state, action) => {
+      // //   state.loading = true;
+      // // })
+      // .addCase(fetchfileResume.fulfilled, (state, action) => {
+      //   state.file = action.payload;
+      // })
+      // // .addCase(fetchfileResume.rejected, (state, action) => {
+      // //   state.loading = false;
+      // // })
       .addCase(deleteResume.fulfilled, (state, action) => {
         state.resumes = state.resumes.filter((r) => r.id !== action.payload);
       })
@@ -223,6 +293,7 @@ const jobSeekerSlice = createSlice({
   },
 });
 
+export const { clearFileUrl } = jobSeekerSlice.actions;
 export default jobSeekerSlice.reducer; // import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 // import axios from "axios";
 
