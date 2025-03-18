@@ -31,3 +31,26 @@
   -ms-overflow-style: none; /* IE and Edge */
   scrollbar-width: none; /* Firefox */
 }
+
+@layer components {
+  .sidebar-social {
+    @apply fixed top-0 left-0 h-screen w-20 flex flex-col
+     justify-center items-center;
+  }
+  /* .sidebar-social {
+    @apply fixed p-2 m-1 left-0 z-10 max-h-full shadow-md backdrop-blur-3xl;
+  } */
+  /* .sidebar-social {
+    @apply fixed top-30 left-0 right-0 z-50 flex items-center 
+    justify-between p-2 lg:px-5 shadow-md backdrop-blur-3xl;
+  } */
+  .icon-style {
+    @apply relative p-2 m-2 h-10 w-10 rounded-2xl
+     bg-cyan-900 dark:bg-white text-white dark:text-cyan-900 
+     hover:rounded-full cursor-pointer  items-center 
+     justify-center flex transition-all duration-300 ease-in-out;
+  }
+  .icon-name {
+    @apply absolute left-14 backdrop-blur-3xl  dark:text-white text-cyan-900 p-2 m-1 w-auto scale-0 transition-all duration-300 ease-linear;
+  }
+}

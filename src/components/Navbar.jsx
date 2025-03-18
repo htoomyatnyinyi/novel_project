@@ -398,7 +398,7 @@ const Navbar = () => {
         <div className="md:hidden animate-slide-in bg-cyan-900">
           <div className="px-4 pt-2 pb-4 space-y-2">
             <Link
-              to="/"
+              to="/home"
               className="block text-sm font-medium hover:text-cyan-300 transition-colors duration-200"
               onClick={() => setIsOpen(false)}
             >
