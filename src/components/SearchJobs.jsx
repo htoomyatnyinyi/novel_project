@@ -176,7 +176,7 @@ const SearchJobs = () => {
       <div className="flex flex-col md:flex-row gap-6">
         {/* Job List (Scrollable) */}
         <div className="w-full md:w-1/3">
-          <div className="p-4 rounded shadow bg-white dark:bg-gray-800 max-h-[70vh] overflow-y-auto">
+          <div className="scrollbar-hide p-4 rounded shadow bg-white dark:bg-gray-800 max-h-[70vh] overflow-y-auto">
             <JobLists
               jobs={searchResults}
               handleFetchJobDetails={handleFetchJobDetails}
@@ -217,8 +217,8 @@ const SearchJobs = () => {
         </div>
 
         {/* Job Details (Right on Web, Open Box on Mobile) */}
-        <div className="w-full md:w-2/3">
-          <div className="hidden md:block p-6 rounded shadow bg-white dark:bg-gray-800 max-h-[70vh] overflow-y-auto">
+        <div className=" w-full md:w-2/3">
+          <div className="scrollbar-hide hidden md:block p-6 rounded shadow bg-white dark:bg-gray-800 max-h-[70vh] overflow-y-auto">
             <JobDetails
               job={jobDetails}
               handleSaveJob={isJobSeeker ? handleSaveJob : null}

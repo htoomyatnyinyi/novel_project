@@ -1,9 +1,13 @@
 import React, { useState, useRef, useEffect } from "react";
+import Theme from "../hooks/utils/Theme";
 import { useSelector, useDispatch } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
+import { AiOutlineUser } from "react-icons/ai";
 import { loginUser, logoutUser } from "../redux/slice/authSlice";
-import Theme from "../hooks/utils/Theme";
-import { AiFillExperiment, AiOutlineUser } from "react-icons/ai";
+import { registerUser } from "../redux/slice/authSlice";
+
+// import A from "../assets/utils/Learning.png";
+import Logo from "../../public/chromosome-svgrepo-com.svg";
 
 const Navbar = () => {
   const dispatch = useDispatch();
@@ -19,9 +23,15 @@ const Navbar = () => {
   // Refs for form inputs
   const loginEmailRef = useRef(null);
   const loginPasswordRef = useRef(null);
-  const signupNameRef = useRef(null);
-  const signupEmailRef = useRef(null);
-  const signupPasswordRef = useRef(null);
+  // // old version
+  // const signupNameRef = useRef(null);
+  // const signupEmailRef = useRef(null);
+  // const signupPasswordRef = useRef(null);
+  // new version
+  const usernameRef = useRef(null);
+  const emailRef = useRef(null);
+  const passwordRef = useRef(null);
+  // const confirmPasswrodRef = useRef(null);
 
   // Refs for dropdown elements
   const loginDropdownRef = useRef(null);
@@ -85,28 +95,34 @@ const Navbar = () => {
 
   const handleSignupSubmit = (e) => {
     e.preventDefault();
-    const name = signupNameRef.current.value;
-    const email = signupEmailRef.current.value;
-    const password = signupPasswordRef.current.value;
-    console.log("Signup:", { name, email, password });
-    // Replace with: dispatch(registerUser({ name, email, password }));
+    const username = usernameRef.current.value;
+    const email = emailRef.current.value;
+    const password = passwordRef.current.value;
+    console.log("Signup:", { username, email, password });
+    dispatch(registerUser({ username, email, password }));
     setIsSignupOpen(false);
-    signupNameRef.current.value = "";
-    signupEmailRef.current.value = "";
-    signupPasswordRef.current.value = "";
+
+    usernameRef.current.value = "";
+    emailRef.current.value = "";
+    passwordRef.current.value = "";
   };
 
   return (
-    <nav className="fixed top-0 left-0 w-full z-50 bg-gradient-to-r from-cyan-800 to-cyan-900 text-white shadow-md">
+    <nav className="fixed top-0 left-0 w-full z-50 dark:bg-gradient-to-l bg-gradient-to-r from-cyan-800 to-cyan-900 text-white shadow-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex items-center space-x-2">
             <Link to="/" className="flex items-center space-x-2">
               {/* <AiFillExperiment className="h-8 w-8 text-cyan-300" /> */}
-              <span className="text-lg font-semibold tracking-wide hidden sm:block border-b-4 border-b-cyan-500">
+              <img
+                src={Logo}
+                alt="learning"
+                className="h-10 w-10 bg-amber-50 p-2 "
+              />
+              {/* <span className="text-lg font-semibold tracking-wide hidden sm:block border-b-4 border-b-cyan-500">
                 Job Diary
-              </span>
+              </span> */}
             </Link>
             <Theme />
           </div>
@@ -217,12 +233,71 @@ const Navbar = () => {
                           Sign In
                         </button>
                       </form>
+                      <button
+                        onClick={() => console.log("Click")}
+                        className="text-sm mt-8"
+                      >
+                        No Account Register Heree!
+                      </button>
                     </div>
                   )}
                 </div>
 
-                {/* Signup Dropdown */}
+                {/* Signup Dropdown Edit Version */}
                 <div className="relative" ref={signupDropdownRef}>
+                  <button
+                    onClick={() => setIsSignupOpen(!isSignupOpen)}
+                    className="text-sm font-medium hover:text-cyan-300 transition-colors duration-200 focus:outline-none"
+                  >
+                    No account? Please Register
+                  </button>
+                  {isSignupOpen && (
+                    <div className="absolute right-0 mt-2 w-64 bg-cyan-800 rounded-md shadow-lg p-4 animate-slide-in">
+                      <h3 className="text-lg font-semibold mb-2">
+                        Register Form
+                      </h3>
+                      <form onSubmit={handleSignupSubmit}>
+                        <div className="mb-2">
+                          <input
+                            type="text"
+                            placeholder="Username"
+                            ref={usernameRef}
+                            className="w-full px-3 py-2 rounded-md bg-cyan-900 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-300"
+                          />
+                        </div>
+                        <div className="mb-2">
+                          <input
+                            type="email"
+                            placeholder="Email"
+                            ref={emailRef}
+                            className="w-full px-3 py-2 rounded-md bg-cyan-900 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-300"
+                          />
+                        </div>
+                        <div className="mb-2">
+                          <input
+                            type="password"
+                            placeholder="Password"
+                            ref={passwordRef}
+                            className="w-full px-3 py-2 rounded-md bg-cyan-900 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-300"
+                          />
+                        </div>
+                        <button
+                          type="submit"
+                          className="w-full bg-cyan-500 hover:bg-cyan-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200"
+                        >
+                          Sign Up
+                        </button>
+                      </form>
+                      <p className="p-2 mt-8">
+                        For Employer Please Click This Link{" "}
+                        <Link to="/register" className="underline">
+                          Here
+                        </Link>
+                      </p>
+                    </div>
+                  )}
+                </div>
+                {/* <div className="relative" ref={signupDropdownRef}>
                   <button
                     onClick={() => setIsSignupOpen(!isSignupOpen)}
                     className="text-sm font-medium hover:text-cyan-300 transition-colors duration-200 focus:outline-none"
@@ -236,7 +311,7 @@ const Navbar = () => {
                         <div className="mb-2">
                           <input
                             type="text"
-                            placeholder="Name"
+                            placeholder="Username"
                             ref={signupNameRef}
                             className="w-full px-3 py-2 rounded-md bg-cyan-900 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-300"
                           />
@@ -264,9 +339,15 @@ const Navbar = () => {
                           Sign Up
                         </button>
                       </form>
+                      <p className="p-2 mt-8">
+                        For Employer Please Click This Link{" "}
+                        <Link to="/register" className="underline">
+                          Here
+                        </Link>
+                      </p>
                     </div>
                   )}
-                </div>
+                </div> */}
               </>
             )}
           </div>

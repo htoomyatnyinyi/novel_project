@@ -17,6 +17,8 @@ import SearchJobs from "./components/SearchJobs";
 import ProfilePage from "./components/ProfilePage";
 import Home from "./pages/Home";
 import EditProfilePage from "./components/EditPorfilePage";
+import NotFound from "./components/NotFound";
+import Register from "./components/Register";
 
 const App = () => {
   const dispatch = useDispatch();
@@ -53,7 +55,7 @@ const App = () => {
             <Route path="/home" element={<Home />} />
             <Route path="/" element={<SearchJobs />} />
             <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Login />} />
+            <Route path="/register" element={<Register />} />
             <Route
               path="/:role/profile"
               element={
@@ -102,7 +104,10 @@ const App = () => {
                 </PrivateRoute>
               }
             />
-            <Route path="*" element={<Navigate to="/" replace />} />
+            {/* <Route path="*" element={<Navigate to="/" replace />} />
+             */}
+            {/* 404 Route */}
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </main>
       </Router>
