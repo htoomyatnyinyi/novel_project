@@ -114,6 +114,7 @@ const Register = () => {
 };
 
 export default Register;
+
 // import React, { useState } from "react";
 // import { useDispatch } from "react-redux";
 // import { registerUser } from "../redux/slice/authSlice";
