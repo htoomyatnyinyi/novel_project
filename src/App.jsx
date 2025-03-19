@@ -20,7 +20,7 @@ import EditProfilePage from "./components/EditPorfilePage";
 import NotFound from "./components/NotFound";
 import Register from "./components/Register";
 
-import SocialBar from "./pages/SocialBar";
+// import SocialBar from "./pages/SocialBar";
 const App = () => {
   const dispatch = useDispatch();
   const { user, loading } = useSelector((state) => state.auth);
@@ -51,7 +51,7 @@ const App = () => {
     <div className="min-h-screen bg-gray-100 dark:bg-cyan-900 text-gray-900 dark:text-white">
       <Router basename={import.meta.env.PUBLIC_URL}>
         <Navbar />
-        <SocialBar />
+        {/* <SocialBar /> */}
         <main className="pt-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
           <Routes>
             <Route path="/home" element={<Home />} />
