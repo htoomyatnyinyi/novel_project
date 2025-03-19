@@ -1,4 +1,3 @@
-// SearchJobs.jsx
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -12,11 +11,19 @@ import {
   deleteApplication,
 } from "../redux/slice/jobSeekerSlice";
 import {
+  AiFillApple,
+  AiFillCalendar,
+  AiFillCloseCircle,
   AiFillDislike,
   AiFillHeart,
   AiFillLike,
+  AiFillMoneyCollect,
+  AiFillPushpin,
   AiFillSave,
 } from "react-icons/ai";
+
+import coverImg from "../assets/utils/Learning.png";
+
 const SearchJobs = () => {
   const dispatch = useDispatch();
   const {
@@ -111,7 +118,7 @@ const SearchJobs = () => {
             name="employment_type"
             value={filters.employment_type}
             onChange={handleChange}
-            className="p-2  bg-cyan-900 text-white dark:text-cyan-900 dark:bg-white focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-300"
+            className="p-3  bg-cyan-900 text-white dark:text-cyan-900 dark:bg-white focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-300"
           >
             <option value="" className="">
               EMPLOYMENT TYPE
@@ -210,13 +217,14 @@ const SearchJobs = () => {
             </div>
 
             {isMobileDetailsOpen && (
-              <div className="lg:hidden fixed inset-0 bg-gray-900/80 z-50 flex items-center justify-center p-4">
-                <div className=" rounded-xl shadow-2xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto relative">
+              <div className="lg:hidden fixed inset-0 bg-cyan-900 text-white z-50 flex items-center justify-center p-1">
+                <div className="  shadow-2xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto relative">
                   <button
                     onClick={() => setIsMobileDetailsOpen(false)}
-                    className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white"
+                    className="absolute top-4 right-4 text-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white"
                   >
-                    <svg
+                    <AiFillCloseCircle className="h-10 w-10" />
+                    {/* <svg
                       className="h-6 w-6"
                       fill="none"
                       viewBox="0 0 24 24"
@@ -228,7 +236,7 @@ const SearchJobs = () => {
                         strokeWidth="2"
                         d="M6 18L18 6M6 6l12 12"
                       />
-                    </svg>
+                    </svg> */}
                   </button>
                   <JobDetails
                     job={jobDetails}
@@ -320,6 +328,69 @@ const SearchJobs = () => {
 
 export default SearchJobs;
 
+// const JobLists = ({
+//   jobs,
+//   handleFetchJobDetails,
+//   handleSaveJob,
+//   isJobSaved,
+//   isJobSeeker,
+// }) => {
+//   if (!jobs || jobs.length === 0) {
+//     return (
+//       <div className="p-4 text-gray-500 dark:text-gray-400">
+//         No jobs available.
+//       </div>
+//     );
+//   }
+
+//   return (
+//     <ul className="space-y-4">
+//       {jobs.map((job) => (
+//         <li
+//           key={job.id}
+//           className="p-4 ring-2 hover:bg-cyan-900 hover:text-white dark:hover:bg-white dark:hover:text-cyan-900 rounded-md transition-all duration-300"
+//         >
+//           {/* Job Details Section */}
+//           <button
+//             className="flex-1 text-left w-full"
+//             onClick={() => handleFetchJobDetails(job.id)}
+//           >
+//             <div className="flex justify-between items-center border-b-2">
+//               <h4 className="font-semibold text-lg p-2 text-amber-300">
+//                 {job.title}
+//               </h4>
+//               <div>
+//                 {isJobSeeker && (
+//                   <button
+//                     onClick={() => handleSaveJob(job.id)}
+//                     className={` p-2 rounded-lg  transition-all duration-300 ${
+//                       isJobSaved(job.id)
+//                         ? "bg-cyan-200 cexitexiursor-not-allowed"
+//                         : "dark:bg-white bg-blue-600 text-white dark:text-cyan-400 hover:bg-cyan-600"
+//                     }`}
+//                     disabled={isJobSaved(job.id)}
+//                   >
+//                     {isJobSaved(job.id) ? <AiFillSave /> : <AiFillHeart />}
+//                   </button>
+//                 )}
+//               </div>
+//             </div>
+//             <p className="p-1">{job.company_name || "Unknown Company"}</p>
+//             <p className="p-1">
+//               Category: {job.category || "Unknown Category"}
+//             </p>
+//             <p className="p-1">Location: {job.location || "N/A"}</p>
+//             <p className="p-1">Type: {job.employment_type}</p>
+//             <p className="p-1">
+//               Salary: ${job.salary_min || "N/A"} - ${job.salary_max || "N/A"}
+//             </p>
+//           </button>
+//         </li>
+//       ))}
+//     </ul>
+//   );
+// };
+
 const JobLists = ({
   jobs,
   handleFetchJobDetails,
@@ -342,9 +413,9 @@ const JobLists = ({
           key={job.id}
           className="p-4 ring-2 hover:bg-cyan-900 hover:text-white dark:hover:bg-white dark:hover:text-cyan-900 rounded-md transition-all duration-300"
         >
-          {/* Job Details Section */}
-          <button
-            className="flex-1 text-left w-full"
+          {/* Replace button with div */}
+          <div
+            className="flex-1 text-left w-full cursor-pointer"
             onClick={() => handleFetchJobDetails(job.id)}
           >
             <div className="flex justify-between items-center border-b-2">
@@ -354,11 +425,14 @@ const JobLists = ({
               <div>
                 {isJobSeeker && (
                   <button
-                    onClick={() => handleSaveJob(job.id)}
-                    className={` p-2 rounded-lg  transition-all duration-300 ${
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevent click from bubbling to the div
+                      handleSaveJob(job.id);
+                    }}
+                    className={`p-2 rounded-lg transition-all duration-300 ${
                       isJobSaved(job.id)
-                        ? "bg-cyan-900 cursor-not-allowed"
-                        : "dark:bg-white bg-cyan-900 text-white dark:text-cyan-900 hover:bg-cyan-600"
+                        ? "bg-cyan-200 cursor-not-allowed" // Fixed typo from "cexitexiursor-not-allowed"
+                        : "dark:bg-white bg-blue-600 text-white dark:text-cyan-400 hover:bg-cyan-600"
                     }`}
                     disabled={isJobSaved(job.id)}
                   >
@@ -376,7 +450,7 @@ const JobLists = ({
             <p className="p-1">
               Salary: ${job.salary_min || "N/A"} - ${job.salary_max || "N/A"}
             </p>
-          </button>
+          </div>
         </li>
       ))}
     </ul>
@@ -391,74 +465,29 @@ const JobDetails = ({
   isJobSeeker,
 }) => {
   if (!job) {
-    return <div className="p-6 ">Select a job to view details.</div>;
+    return (
+      <div className="p-6 ">
+        <h1>Select a job to view details.</h1>
+        <p>Later This space will show ads display</p>
+      </div>
+    );
   }
 
   return (
     <div className="space-y-6">
+      <img src={coverImg} alt="coverImage" className="w-full h-100 bg-cover " />
       <div>
-        <h2 className="text-2xl font-bold  bg-gradient-to-r from-red-500 to-blue-500 bg-clip-text text-transparent">
-          {/* {job.title} */}
-          AFelfkjaelkfaewlfkjawelkfjaewklfjawelfkjaewfklaewkfjlk
-        </h2>
-        <p className=" mt-1">{job.company_name || "N/A"}</p>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <p>
-          <strong className="">Location:</strong>{" "}
-          <span className="">{job.location || "N/A"}</span>
-        </p>
-        <p>
-          <strong className="">Type:</strong>{" "}
-          <span className="">{job.employment_type || "N/A"}</span>
-        </p>
-        <p>
-          <strong className="">Salary:</strong>{" "}
-          <span className="">
-            ${job.salary_min || "N/A"} - ${job.salary_max || "N/A"}
-          </span>
-        </p>
-        <p>
-          <strong className="">Posted:</strong>{" "}
-          <span className="">
-            {new Date(job.posted_at).toLocaleDateString()}
-          </span>
+        <div className="flex justify-between items-center">
+          <h2 className="text-3xl font-bold  bg-gradient-to-r from-yellow-500 to-blue-500 bg-clip-text text-transparent">
+            {job.title}
+          </h2>
+          <AiFillApple className="h-10 w-10" />
+          {/* <span className="text-amber-400">So</span> */}
+        </div>
+        <p className=" mt-1">
+          {job.company_name || "N/A: Company Nale Not Available"}
         </p>
       </div>
-
-      <div>
-        <h3 className="text-xl font-semibold  mb-2">Description</h3>
-        <p className="">{job.description || "No description available"}</p>
-      </div>
-
-      <div>
-        <h3 className="text-xl font-semibold  mb-2">Requirements</h3>
-        <ul className="list-disc pl-5 space-y-1 ">
-          {Array.isArray(job.requirements) && job.requirements.length > 0 ? (
-            job.requirements.map((req, index) => <li key={index}>{req}</li>)
-          ) : (
-            <li>No requirements listed</li>
-          )}
-        </ul>
-      </div>
-
-      <div>
-        <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-          Responsibilities
-        </h3>
-        <ul className="list-disc pl-5 space-y-1 ">
-          {Array.isArray(job.responsibilities) &&
-          job.responsibilities.length > 0 ? (
-            job.responsibilities.map((resp, index) => (
-              <li key={index}>{resp}</li>
-            ))
-          ) : (
-            <li>No responsibilities listed</li>
-          )}
-        </ul>
-      </div>
-
       {isJobSeeker && (
         <div className="flex gap-4">
           <button
@@ -480,6 +509,90 @@ const JobDetails = ({
           </button>
         </div>
       )}
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 ">
+        <p>
+          <AiFillPushpin />
+          <span className="">{job.location || "N/A"}</span>
+        </p>
+        <p>
+          {/* <strong className="">Type:</strong>{" "} */}
+          <AiFillPushpin />
+          <span className="">{job.employment_type || "N/A"}</span>
+        </p>
+        <p>
+          <AiFillMoneyCollect />
+          {/* <strong className="">Salary:</strong>{" "} */}
+          <span className="">
+            ${job.salary_min || "N/A"} - ${job.salary_max || "N/A"}
+          </span>
+        </p>
+        <p>
+          {/* <strong className="">Posted:</strong>{" "} */}
+          <AiFillCalendar />
+          <span className="">
+            {new Date(job.posted_at).toLocaleDateString()}
+          </span>
+        </p>
+      </div>
+
+      <div className="">
+        <h3 className="text-xl font-semibold text-amber-400  mb-2">
+          Description
+        </h3>
+        <p className="">{job.description || "No description available"}</p>
+      </div>
+
+      <div>
+        <h3 className="text-xl font-semibold  mb-2 text-amber-400">
+          Requirements
+        </h3>
+        <ul className="list-disc pl-5 space-y-1 ">
+          {Array.isArray(job.requirements) && job.requirements.length > 0 ? (
+            job.requirements.map((req, index) => <li key={index}>{req}</li>)
+          ) : (
+            <li>No requirements listed</li>
+          )}
+        </ul>
+      </div>
+
+      <div>
+        <h3 className="text-xl font-semibold text-amber-400 mb-2">
+          Responsibilities
+        </h3>
+        <ul className="list-disc pl-5 space-y-1 ">
+          {Array.isArray(job.responsibilities) &&
+          job.responsibilities.length > 0 ? (
+            job.responsibilities.map((resp, index) => (
+              <li key={index}>{resp}</li>
+            ))
+          ) : (
+            <li>No responsibilities listed</li>
+          )}
+        </ul>
+      </div>
+
+      {/* {isJobSeeker && (
+        <div className="flex gap-4">
+          <button
+            onClick={() => handleSaveJob(job.id)}
+            className={`px-4 py-2 rounded-lg text-white transition-all duration-300 ${
+              isJobSaved(job.id)
+                ? "bg-gray-500 cursor-not-allowed"
+                : "bg-yellow-500 hover:bg-yellow-600"
+            }`}
+            disabled={isJobSaved(job.id)}
+          >
+            {isJobSaved(job.id) ? "Saved" : "Save Job"}
+          </button>
+          <button
+            onClick={() => handleApply(job.id)}
+            className="px-4 py-2 bg-gradient-to-r from-green-500 to-teal-500 text-white rounded-lg hover:from-green-600 hover:to-teal-600 transition-all duration-300"
+          >
+            Apply Now
+          </button>
+        </div>
+      )} */}
     </div>
   );
 };
