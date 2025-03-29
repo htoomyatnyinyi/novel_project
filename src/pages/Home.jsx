@@ -12,6 +12,13 @@ const Home = () => {
           console.log("Login Failed");
         }}
       />
+      <h1>Login info for testing under development</h1>
+      <p>admin@mlab.com</p>
+      <p>password- admin</p>
+      <h1>employer@jobdiary.com</h1>
+      <p>password- employer</p>
+      <h1>jobseeker@jobdiary.com</h1>
+      <p>password- jobseeker</p>
     </div>
   );
 };
