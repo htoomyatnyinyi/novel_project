@@ -3,13 +3,17 @@ import api from "../services/api.js";
 
 export const registerUser = createAsyncThunk(
   "auth/register",
-  async ({ username, email, password, role }, { rejectWithValue }) => {
+  async (
+    { username, email, password, confirmPassword, role },
+    { rejectWithValue }
+  ) => {
     try {
       const { data } = await api.post("/auth/register", {
         username,
         email,
         password,
-        // role,
+        confirmPassword,
+        role,
       });
       return { userId: data.userId, message: data.message };
       // return data;

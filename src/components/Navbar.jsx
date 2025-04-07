@@ -393,18 +393,20 @@ const SignupForm = ({ onClose }) => {
       return;
     }
 
-    dispatch(registerUser({ username, email, password })).then((result) => {
-      if (result.meta.requestStatus === "fulfilled") {
-        toast.success("Signup successful");
-        onClose();
-        usernameRef.current.value = "";
-        emailRef.current.value = "";
-        passwordRef.current.value = "";
-        confirmPasswordRef.current.value = "";
-      } else {
-        toast.error(result.payload || "Signup failed");
+    dispatch(registerUser({ username, email, password, confirmPassword })).then(
+      (result) => {
+        if (result.meta.requestStatus === "fulfilled") {
+          toast.success("Signup successful");
+          onClose();
+          usernameRef.current.value = "";
+          emailRef.current.value = "";
+          passwordRef.current.value = "";
+          confirmPasswordRef.current.value = "";
+        } else {
+          toast.error(result.payload || "Signup failed");
+        }
       }
-    });
+    );
   };
 
   return (
